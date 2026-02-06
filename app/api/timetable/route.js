@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import Event from "@/models/event";
+import { generateRecurringEvents } from "@utils/generateRecurringEvents.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const PROMPT = `
@@ -25,7 +27,10 @@ Output ONLY valid JSON array:
 export async function POST(req) {
   try {
     const formData = await req.formData();
+
     const file = formData.get("file");
+    const date = formData.get("date");
+    const weeks = formData.get("weeks");
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -46,16 +51,16 @@ export async function POST(req) {
         },
       },
     ]);
-
-
     const responseText = result.response.text();
-    console.log("Raw response:", responseText);
-    // Clean JSON string (remove potential ```json wrappers)
     const cleanJson = responseText.replace(/```json|```/g, "").trim();
+    const response = generateRecurringEvents(cleanJson, date, Number(weeks));
 
-    console.log("clean response:", responseText);
+    await Event.insertMany(response);
     
-    return NextResponse.json(JSON.parse(cleanJson));
+    return NextResponse.json({
+        message: `${response.length} Events are created successfully`,
+    });
+
   } catch (error) {
     console.error("Extraction error:", error);
     return NextResponse.json({ error: "Failed to parse timetable" }, { status: 500 });
