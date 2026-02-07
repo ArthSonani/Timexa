@@ -1,6 +1,6 @@
+"use client";
 import Link from "next/link";
-import { connectToDB } from "@/utils/database";
-import Event from "@/models/event";
+import { useSession } from "next-auth/react";
 
 const formatTime = (date) =>
   new Intl.DateTimeFormat("en-US", {
@@ -16,30 +16,34 @@ const formatDate = (date) =>
     year: "numeric",
   }).format(date);
 
-async function getTodayEvents() {
-  await connectToDB();
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
+// async function getTodayEvents() {
+//   await connectToDB();
+//   const startOfDay = new Date();
+//   startOfDay.setHours(0, 0, 0, 0);
+//   const endOfDay = new Date();
+//   endOfDay.setHours(23, 59, 59, 999);
 
-  const events = await Event.find({
-    start: { $lte: endOfDay },
-    end: { $gte: startOfDay },
-  })
-    .sort({ start: 1 })
-    .lean();
+//   const events = await Event.find({
+//     start: { $lte: endOfDay },
+//     end: { $gte: startOfDay },
+//   })
+//     .sort({ start: 1 })
+//     .lean();
 
-  return events.map((event) => ({
-    id: event._id.toString(),
-    title: event.title,
-    start: event.start,
-    end: event.end,
-  }));
-}
+//   return events.map((event) => ({
+//     id: event._id.toString(),
+//     title: event.title,
+//     start: event.start,
+//     end: event.end,
+//   }));
+// }
 
-export default async function Home() {
-  const todayEvents = await getTodayEvents();
+export default function Home() {
+  const { data: session } = useSession()
+
+  console.log("Session Data:", session);
+
+  // const todayEvents = await getTodayEvents();
   const todayLabel = formatDate(new Date());
 
   return (
@@ -67,7 +71,7 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-4">
-            {todayEvents.length === 0 ? (
+            {/* {todayEvents.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
                 <p className="text-sm font-medium text-slate-600">
                   No events scheduled for today.
@@ -95,7 +99,7 @@ export default async function Home() {
                   </p>
                 </article>
               ))
-            )}
+            )} */}
           </div>
         </div>
       </section>

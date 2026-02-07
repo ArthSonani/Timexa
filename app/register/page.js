@@ -56,7 +56,7 @@ const Register = () => {
           setError('Account created, please login to continue.')
           router.push('/login')
         } else {
-          router.push('/dashboard')
+          router.push('/')
         }
       } else {
         setError(data.message || 'Registration failed')
@@ -69,7 +69,7 @@ const Register = () => {
   }
 
   const handleGoogleLogin = async () => {
-    await signIn("google", { callbackUrl: "/dashboard" });
+    await signIn("google", { callbackUrl: "/" });
   };
 
   return (
